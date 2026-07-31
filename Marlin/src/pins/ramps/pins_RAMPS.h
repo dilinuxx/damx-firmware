@@ -60,61 +60,6 @@
 #endif
 
 /*
-; =================================
-; LOGIC FOR - BUILD & DOSING MOTOR
-; =================================
-M17        ; enable steppers
-M82        ; absolute mode
-T0         ; select actuator E0
-G92 E0     ; zero the axis, set current position = 0
-G1 E50 F150   ; move down
-G1 E100 F150  ; move further down
-G1 E150 F150  ; move further down
-G1 E50 F150   ; move back up
-G1 E0 F150    ; return to start
-M18 E0       ; Disable extruder 0 - So users can manually turn it
------------------------------------
-M17        ; enable steppers
-M82        ; absolute mode
-T1         ; select actuator E1
-G92 E1     ; zero the axis, set current position = 0
-G1 E50 F150   ; move down
-G1 E100 F150  ; move further down
-G1 E150 F150  ; move further down
-G1 E50 F150   ; move back up
-G1 E0 F150    ; return to start
-M18 E1       ; Disable extruder 1 - So users can manually turn it
-
-; ===========================
-; VACUUM PUMP
-; ===========================
-M42 P8 S255   ; turn on
-M42 P8 S0     ; turn off
-
-; ===========================
-; VACUUM SELENOID VALVE
-; ===========================
-M42 P59 S255   ; turn on
-M42 P59 S0     ; turn off
-
-; ===========================
-; ARGON PUMP
-; ===========================
-M42 P7 S255   ; turn on
-M42 P7 S0     ; turn off
-
-; ===========================
-; ARGON INLET SELENOID VALVE
-; ===========================
-M42 P58 S255   ; turn on
-M42 P58 S0     ; turn off
-
-; ===========================
-; ARGON OUTLET SELENOID VALVE
-; ===========================
-M42 P57 S255   ; turn on
-M42 P57 S0     ; turn off
-
 ; ===========================
 ; Test PSU Control
 =============================
@@ -140,31 +85,6 @@ M410            ; Abort planned moves - stop mid-move
 G1 X200 Y200 Z10 F1500 ; Try to move again - may cause problems
 G4 S2           ; Wait 2 seconds before triggering M112
 M112            ; Full emergency shutdown
-
-; ===========================
-; Test Debug Mode
-=============================
-M111 S1     ; Enable debug mode
-G4 S5       ; Wait for 5 seconds to observe debug output
-M111 S0     ; Disable debug mode
-
-; ===========================
-; Test Endstop Enable/Disable
-=============================
-M120                   ; Enable all endstops
-G1 X100 Y100 Z10 F1500 ; Move to a point
-G4 S5                  ; Wait for 5 seconds
-M121                   ; Disable all endstops
-G1 X200 Y200 Z10 F1500 ; Move to another point beyond endstop limits
-G4 S5                  ; Wait for 5 seconds
-M120                   ; Re-enable endstops
-
-; ===========================
-; Get Current Axis 
-=============================
-M114
-Sample Expected Output:
-X:100.00 Y:100.00 Z:5.00 E0:10.00 E1:5.00
 
 ; ===========================
 ; Get Current Temp 
@@ -356,6 +276,11 @@ ok T:200.00 /200.00 B:60.00 /60.00 T0:200.00 /200.00
 #define I2C_SCL_PIN 21
 #endif
 
+#define USE_DAMX_I2C_BUS
+#ifdef USE_DAMX_I2C_BUS
+  #define DAMX_I2C_BUS_PIN 2021
+#endif
+
 // MISO	PB3	50; MOSI	PB2	51; SCK	PB1	52; SS PB0	53
 
  #ifndef TEMP_0_SO_PIN
@@ -482,6 +407,7 @@ ok T:200.00 /200.00 B:60.00 /60.00 T0:200.00 /200.00
 #define CASE_LIGHT_PIN AUX2_07 // Hardware PWM
 #endif
 #endif
+
 
 //
 // M3/M4/M5 - Spindle/Laser Control

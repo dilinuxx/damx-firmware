@@ -52,7 +52,6 @@ void GasControl::init() {
 // ------------------------
 // Vacuum
 // ------------------------
-
 void GasControl::vacuum_on() {
   #ifdef VACUUM_RELAY_PIN
     write_pin(VACUUM_RELAY_PIN, true, VACUUM_RELAY_ACTIVE_STATE);

@@ -28,6 +28,10 @@
 #include "../../feature/spindle_laser.h"
 #include "../../module/planner.h"
 
+#if ENABLED(USE_DAMX_I2C_BUS)
+  #include "../../module/laser_control.h"
+#endif
+
 /**
  * Laser:
  *  M3 - Laser ON/Power (Ramped power)
@@ -88,6 +92,16 @@ void GcodeSuite::M3_M4(const bool is_M4) {
     }
   #endif
 
+  // --- DAMX MULTI-LASER SELECTION ---
+  // Parse 'P' parameter to determine which laser index to fire.
+  uint8_t laser_idx = 0;
+  #if ENABLED(USE_DAMX_I2C_BUS)
+    if (parser.seenval('P')) {
+      laserControl.active_laser = parser.value_byte();
+    }
+    laser_idx = laserControl.active_laser;
+  #endif
+
   auto get_s_power = [] {
     if (parser.seenval('S')) {
       const float v = parser.value_float();
@@ -116,15 +130,21 @@ void GcodeSuite::M3_M4(const bool is_M4) {
   else {
     cutter.set_enabled(true);
     get_s_power();
-    cutter.apply_power(
-      #if ENABLED(SPINDLE_SERVO)
-        cutter.unitPower
-      #elif ENABLED(SPINDLE_LASER_USE_PWM)
-        cutter.upower_to_ocr(cutter.unitPower)
-      #else
-        cutter.unitPower > 0 ? 255 : 0
-      #endif
-    );
+
+    // --- DAMX MULTI-LASER I2C BYPASS ROUTE ---
+    #if ENABLED(USE_DAMX_I2C_BUS)
+      cutter.apply_power(cutter.power, laser_idx);
+    #else
+      cutter.apply_power(
+        #if ENABLED(SPINDLE_SERVO)
+          cutter.unitPower
+        #elif ENABLED(SPINDLE_LASER_USE_PWM)
+          cutter.upower_to_ocr(cutter.unitPower)
+        #else
+          cutter.unitPower > 0 ? 255 : 0
+        #endif
+      );
+    #endif
     TERN_(SPINDLE_CHANGE_DIR, cutter.set_reverse(is_M4));
   }
 }
@@ -142,7 +162,23 @@ void GcodeSuite::M3_M4(const bool is_M4) {
 void GcodeSuite::M5() {
   planner.synchronize();
   cutter.power = 0;
-  cutter.apply_power(0);                          // M5 just kills power, leaving inline mode unchanged
+
+  // --- DAMX MULTI-LASER I2C HANDLER ---
+  #if ENABLED(USE_DAMX_I2C_BUS)
+    if (parser.seenval('P')) {
+      // Turn off only the explicitly requested laser index
+      cutter.apply_power(0, parser.value_byte());
+    } 
+    else {
+      // EMERGENCY/GLOBAL OFF: No index specified, turn off all 10 possible lasers over I2C
+      for (uint8_t i = 0; i < 10; i++) {
+        cutter.apply_power(0, i);
+      }
+    }
+  #else
+    cutter.apply_power(0); // M5 just kills power, leaving inline mode unchanged                    
+  #endif
+                        
   if (cutter.cutter_mode != CUTTER_MODE_STANDARD) {
     if (parser.seen_test('I')) {
       TERN_(LASER_FEATURE, cutter.inline_power(cutter.power));
@@ -150,6 +186,7 @@ void GcodeSuite::M5() {
       cutter.cutter_mode = CUTTER_MODE_STANDARD;  // Switch from inline to standard mode.
     }
   }
+
   cutter.set_enabled(false);                      // Disable enable output setting
 }
 

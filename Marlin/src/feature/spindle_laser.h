@@ -125,6 +125,7 @@ public:
   static bool enabled() { return enable_state; }
 
   static void apply_power(const uint8_t inpow);
+  static void apply_power(const uint8_t inpow, const uint8_t laser_idx);
 
   FORCE_INLINE static void refresh() { apply_power(power); }
 

@@ -113,6 +113,7 @@ Marlin Firmware original logo design by Ahmet Cem TURAN [@ahmetcemturan](//githu
 
 Name|Role|Link|Donate
 ----|----|----|----
+🇺🇸 Emem Udoh|Enginering Manager|
 🇺🇸 Scott Lahteine|Project Lead|[[@thinkyhead](//github.com/thinkyhead)]|[💸 Donate](//marlinfw.org/docs/development/contributing.html#donate)
 🇺🇸 Roxanne Neufeld|Admin|[[@Roxy-3D](//github.com/Roxy-3D)]|
 🇺🇸 Keith Bennett|Admin|[[@thisiskeithb](//github.com/thisiskeithb)]|[💸 Donate](//github.com/sponsors/thisiskeithb)

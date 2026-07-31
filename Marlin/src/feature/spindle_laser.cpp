@@ -25,6 +25,7 @@
  */
 
 #include "../inc/MarlinConfig.h"
+#include "../module/laser_control.h"
 
 #if HAS_CUTTER
 
@@ -126,6 +127,16 @@ void SpindleLaser::init() {
  * @param opwr Power value. Range 0 to MAX.
  */
 void SpindleLaser::apply_power(const uint8_t opwr) {
+  
+  // Handle DamX I2C Laser Control
+  #if ENABLED(USE_DAMX_I2C_BUS)
+    if (opwr == last_power_applied) return;
+    last_power_applied = opwr;
+    isReadyForUI = true;
+    laserControl.set_power(opwr);
+    return;
+  #endif
+
   if (enabled() || opwr == 0) {                                   // 0 check allows us to disable where no ENA pin exists
     // Test and set the last power used to improve performance
     if (opwr == last_power_applied) return;
@@ -154,6 +165,19 @@ void SpindleLaser::apply_power(const uint8_t opwr) {
     isReadyForUI = false; // Only used for UI display updates.
     TERN_(SPINDLE_LASER_USE_PWM, ocr_off());
   }
+}
+
+void SpindleLaser::apply_power(const uint8_t inpow, const uint8_t laser_idx) {
+  #if ENABLED(USE_DAMX_I2C_BUS)
+    if (laser_idx < 10) {
+      isReadyForUI = true;
+      laserControl.set_power(laser_idx, inpow);
+      return;
+    }
+  #endif
+
+  // Fallback: If I2C is disabled
+  apply_power(inpow);
 }
 
 #if ENABLED(SPINDLE_CHANGE_DIR)

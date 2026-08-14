@@ -1,6 +1,7 @@
 import socket
 
-SERVER = "rishi.shef.ac.uk"
+#SERVER = "rishi.shef.ac.uk"
+SERVER = "172.20.10.3"
 PORT = 51003
 
 

@@ -28,6 +28,11 @@ void LaserControl::init() {
   }
 
   SERIAL_ECHOLNPGM("LaserControl: I2C Pins configured (pullups enabled)");
+
+  // DamX Laser - Raspberry Pi synchronization output
+  pinMode(LASER_SYNC_PIN, OUTPUT);
+  digitalWrite(LASER_SYNC_PIN, LOW);
+  SERIAL_ECHOLNPGM("LaserControl: LASER_SYNC_PIN initialized: D66 = LOW");
 }
 
 void LaserControl::i2c_scanner() {
@@ -138,12 +143,24 @@ bool LaserControl::twi_write_byte(const uint8_t addr, const uint8_t data) {
 }
 
 void LaserControl::set_power(const uint8_t pwr) {
+
+  // Raspberry Pi laser synchronization
+  // HIGH = laser power requested
+  // LOW  = laser off
+  digitalWrite(LASER_SYNC_PIN, pwr > 0 ? HIGH : LOW);
+
   SERIAL_ECHOPGM("{LASER:");
   SERIAL_ECHO((int)pwr);
   SERIAL_ECHOLNPGM("}");
 }
 
 void LaserControl::set_power(const uint8_t laser_idx, const uint8_t pwr) {
+
+  // Raspberry Pi laser synchronization
+  // HIGH = laser power requested
+  // LOW  = laser off
+  digitalWrite(LASER_SYNC_PIN, pwr > 0 ? HIGH : LOW);
+
   SERIAL_ECHOPGM("{LASER:");
   SERIAL_ECHO((int)laser_idx);
   SERIAL_ECHOPGM("{PWR:");

@@ -268,6 +268,10 @@ ok T:200.00 /200.00 B:60.00 /60.00 T0:200.00 /200.00
 #define S1_SIGNAL_PIN 56
 #endif
 
+#ifndef LASER_SYNC_PIN
+#define LASER_SYNC_PIN AUX2_09 //66
+#endif
+
 #ifndef I2C_SDA_PIN
 #define I2C_SDA_PIN 20
 #endif
